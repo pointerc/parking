@@ -1,3 +1,3 @@
 mongodb:
-  url: 127.0.0.1:30001
+  url: mongodb://root:$RFVvgy7@106.54.118.232:27017/admin
   db: admin

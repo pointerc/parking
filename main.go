@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"parking/goapp/service"
 )
 
 func main() {
@@ -11,6 +13,7 @@ func main() {
 	//	c.String(200, "test")
 	//})
 	//router.Run(":8080")
+	Start()
 }
 
 func Start() {
@@ -28,7 +31,7 @@ func Start() {
 
 	Addrouter(router)
 
-	router.Run(":8090")
+	router.Run("0.0.0.0:8090")
 }
 
 func Cors() gin.HandlerFunc {
@@ -40,9 +43,12 @@ func Cors() gin.HandlerFunc {
 		c.Header("Access-Control-Expose-Headers", "Content-Length, Access-Control-Allow-Origin, Access-Control-Allow-Headers, Content-Type")
 		c.Header("Access-Control-Allow-Credentials", "true")
 		c.Header("Content-Type", "application/json")
-
+		fmt.Println("method:", method)
 		//允许所有OPTIONS请求
 		if method == "OPTIONS" {
+			c.AbortWithStatus(http.StatusNoContent)
+		}
+		if c.Request.URL.Path == "/favicon.ico" {
 			c.AbortWithStatus(http.StatusNoContent)
 		}
 		//处理请求
@@ -51,5 +57,15 @@ func Cors() gin.HandlerFunc {
 }
 
 func Addrouter(router *gin.Engine) {
+	var (
+		ILogin service.ILogin
+		login = new(service.Login)
+	)
+	ILogin = login
+	ILogin.LoginRouter(router)
 
+	router.NoRoute(func(c *gin.Context) {
+		fmt.Println(c.Request.URL.Path)
+		c.String(http.StatusNotFound, "没有这个路由")
+	})
 }
