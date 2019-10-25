@@ -6,8 +6,8 @@ import (
 
 type User struct {
 	ID bson.ObjectId `json:"uid" bson:"_id"`	//用户id
-	NickName string `json:"nick_name" bson:"nick_name"`
-	PassWord string `json:"pass_word" bson:"pass_word"`
+	NickName string `json:"name" bson:"nick_name"`
+	PassWord string `json:"pwd" bson:"pass_word"`
 }
 
 

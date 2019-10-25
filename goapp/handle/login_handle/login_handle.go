@@ -1,9 +1,9 @@
 package login_handle
 
 import (
-	"crypto/md5"
-	"encoding/hex"
+	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
@@ -40,11 +40,13 @@ func (l *Login) Register(c *gin.Context) {
 	)
 	err = c.ShouldBindJSON(&userInfo)
 	if err != nil {
+		fmt.Println("解析前端请求失败:", err)
 		resp.ExecFail(c, "解析前端请求失败")
 		return
 	}
+	fmt.Println("前端请求：", userInfo)
 	err = db.Mgo.Collection("User", func(c *mgo.Collection) error {
-		return c.Find(bson.M{"username": userInfo.NickName}).One(&data)
+		return c.Find(bson.M{"nick_name": userInfo.NickName}).One(&data)
 	})
 	if err != nil && err.Error() != "not found" {
 		resp.ExecFail(c, "系统异常")
@@ -54,12 +56,15 @@ func (l *Login) Register(c *gin.Context) {
 		resp.ExecFail(c, "该用户名已存在")
 		return
 	}
-	m := md5.New()
-	v, _ := json.Marshal(userInfo)
-	m.Write(v)
-	token := hex.EncodeToString(m.Sum(nil))
+	userInfo.ID = bson.NewObjectId()
+	fmt.Println("insert mongodb:", userInfo)
+	db.Mgo.Collection("User", func(c *mgo.Collection) error {
+		return c.Insert(userInfo)
+	})
+	tokenAES := struct {
+		Uid bson.ObjectId `json:"uid"`
+	}{Uid: userInfo.ID}
+	v, _ := json.Marshal(tokenAES)
+	token := base64.StdEncoding.EncodeToString(v)
 	resp.RegisterSucc(c, token)
-	go func() {
-		//将token写入redis
-	}()
 }

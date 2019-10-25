@@ -65,7 +65,6 @@ func Addrouter(router *gin.Engine) {
 	ILogin.LoginRouter(router)
 
 	router.NoRoute(func(c *gin.Context) {
-		fmt.Println(c.Request.URL.Path)
 		c.String(http.StatusNotFound, "没有这个路由")
 	})
 }

@@ -1,6 +1,7 @@
 package response
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -30,7 +31,7 @@ func (j *JsonData)ExecFail(c *gin.Context, msg string) {
 	result.Data = struct {}{}
 	result.Msg = msg
 	result.Token = ""
-	c.JSON(http.StatusNoContent, result)
+	c.JSON(http.StatusOK, result)
 }
 
 func (j *JsonData)RegisterSucc(c *gin.Context, token string) {
@@ -40,5 +41,6 @@ func (j *JsonData)RegisterSucc(c *gin.Context, token string) {
 	result.Data = []struct{}{}
 	result.Msg = "注册成功"
 	result.Token = token
+	fmt.Println("token:", token)
 	c.JSON(http.StatusOK, result)
 }
