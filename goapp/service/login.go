@@ -19,8 +19,8 @@ func (l *Login) LoginRouter(router *gin.Engine) {
 	//router.GET("/system/login/1", l.LoginSystem)
 	//router.GET("/system/register/1", l.Register)
 	handle := router.Group("/system")
-	handle.GET("/login/1", l.LoginSystem)
-	handle.GET("/register/1", l.Register)
+	handle.POST("/login/1", l.LoginSystem)
+	handle.POST("/register/1", l.Register)
 }
 
 func (l *Login) LoginSystem(c *gin.Context) {
