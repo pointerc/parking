@@ -18,7 +18,10 @@ type Login struct{}
 func (l *Login)UserLogin(c *gin.Context) {
 	var (
 		UserLogin login_model.User
+		UserInfo login_model.User
+		match bson.M
 		data = make(map[string]interface{})
+		resp = &response.JsonData{}
 		err error
 	)
 
@@ -29,6 +32,28 @@ func (l *Login)UserLogin(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, data)
 		return
 	}
+	if UserLogin.NickName == "" || UserLogin.PassWord == "" {
+		resp.ExecFail(c, "用户名或密码不能为空")
+		return
+	}
+	//检查用户是否存在
+	match = bson.M{"nick_name": UserLogin.NickName}
+	err = db.Mgo.Collection("User", func(c *mgo.Collection) error {
+		return c.Find(match).One(&UserInfo)
+	})
+	if err != nil && err.Error() != "not found" {
+		resp.ExecFail(c, "系统异常")
+		return
+	}
+	if UserInfo.ID.Hex() == "" {
+		resp.ExecFail(c, "该用户不存在，请先注册")
+		return
+	}
+	if UserInfo.PassWord != UserLogin.PassWord {
+		resp.ExecFail(c, "密码错误")
+		return
+	}
+	resp.LoginSucc(c)
 }
 
 func (l *Login) Register(c *gin.Context) {

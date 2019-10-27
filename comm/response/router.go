@@ -14,6 +14,26 @@ type JsonData struct {
 	Token string `json:"token"`	//用户token
 }
 
+func (j *JsonData) LoginSucc(c *gin.Context) {
+	var result JsonData
+	result.State = 0
+	result.Code = 200
+	result.Data = struct {}{}
+	result.Msg = "登录成功"
+	result.Token = ""
+	c.JSON(http.StatusOK, result)
+}
+
+func (j *JsonData) Succ(c *gin.Context) {
+	var result JsonData
+	result.State = 0
+	result.Code = 200
+	result.Data = struct {}{}
+	result.Msg = "执行成功"
+	result.Token = ""
+	c.JSON(http.StatusOK, result)
+}
+
 func (j *JsonData)ExecSucc(c *gin.Context, data interface{}) {
 	var result JsonData
 	result.State = 0

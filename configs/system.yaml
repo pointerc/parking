@@ -1,3 +1,8 @@
 mongodb:
   url: mongodb://root:$RFVvgy7@106.54.118.232:27017/admin
   db: admin
+
+parking:
+  total: 40
+  max: 20
+  min: 20

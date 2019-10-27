@@ -11,11 +11,4 @@ type User struct {
 }
 
 
-//校验用户名密码
-func CheckUserPasswd(user *User) {
-	var (
-
-	)
-
-}
 

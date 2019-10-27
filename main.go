@@ -2,25 +2,21 @@ package main
 
 import (
 	"fmt"
+	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	_ "parking/goapp/handle/space_handle"
 	"parking/goapp/service"
 )
 
 func main() {
-	//router := gin.Default()
-	//router.GET("/", func(c *gin.Context) {
-	//	c.String(200, "test")
-	//})
-	//router.Run(":8080")
 	Start()
 }
 
 func Start() {
-	gin.SetMode("debug")	//设置gin的模式
-	//router := gin.Default()
+	gin.SetMode("debug") //设置gin的模式
 	router := gin.Default()
-	//router.Use(gzip.Gzip(gzip.DefaultCompression)) //设置请求数据压缩
+	router.Use(gzip.Gzip(gzip.DefaultCompression)) //设置请求数据压缩
 	router.MaxMultipartMemory = 8 << 20
 
 	// Recovery 中间件会 recover 任何 panic。如果有 panic 的话，会写入 500。
@@ -48,6 +44,7 @@ func Cors() gin.HandlerFunc {
 		if method == "OPTIONS" {
 			c.AbortWithStatus(http.StatusNoContent)
 		}
+		//忽略该路由请求
 		if c.Request.URL.Path == "/favicon.ico" {
 			c.AbortWithStatus(http.StatusNoContent)
 		}
@@ -59,10 +56,32 @@ func Cors() gin.HandlerFunc {
 func Addrouter(router *gin.Engine) {
 	var (
 		ILogin service.ILogin
-		login = new(service.Login)
+		login  = new(service.Login)
+
+		ISpace service.ISpace
+		space = new(service.Space)
+
+		ICar service.ICar
+		car = new(service.Car)
 	)
+
+	//注册登录
 	ILogin = login
 	ILogin.LoginRouter(router)
+
+	//创建车位
+	ISpace = space
+	ISpace.SpaceRoter(router)
+
+	//车辆出入场
+	ICar = car
+	ICar.CarStop(router)
+
+	//收费标准
+
+	//
+
+	//
 
 	router.NoRoute(func(c *gin.Context) {
 		c.String(http.StatusNotFound, "没有这个路由")
