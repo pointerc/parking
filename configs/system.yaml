@@ -3,6 +3,9 @@ mongodb:
   db: admin
 
 parking:
-  total: 40
   max: 20
   min: 20
+
+park:
+  max_price: 12
+  min_price: 8

@@ -9,6 +9,7 @@ import (
 type ISpace interface {
 	SpaceInit(c *gin.Context)
 	FreeSpace(c *gin.Context)
+	NowCanUse(c *gin.Context)
 	SpaceRoter(router *gin.Engine)
 }
 
@@ -21,8 +22,9 @@ func (s *Space) SpaceRoter(router *gin.Engine) {
 	middle := middlewaire.Token{}
 	handle.Use(middle.CheckToken())
 	{
-		handle.GET("/init/1", s.SpaceInit)
-		handle.GET("/space/free/1", s.FreeSpace)
+		//handle.GET("/init/1", s.SpaceInit)
+		handle.POST("/space/free/1", s.FreeSpace)
+		handle.POST("/space/now/1", s.NowCanUse)
 	}
 }
 
@@ -32,4 +34,8 @@ func (s *Space) SpaceInit(c *gin.Context) {
 
 func (s *Space) FreeSpace(c *gin.Context) {
 	s.space.FreeSpace(c)
+}
+
+func (s *Space) NowCanUse(c *gin.Context) {
+	s.space.NowCanUse(c)
 }

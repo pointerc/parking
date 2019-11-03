@@ -115,5 +115,36 @@ func (s *Space) FreeSpace(c *gin.Context) {
 		return
 	}
 	data["min"] = count
+	data["bigCarSum"] = max
+	data["smallCarSum"] = min
+	resp.ExecSucc(c, data)
+}
+
+func (s *Space) NowCanUse(c *gin.Context) {
+	var (
+		uid string
+		data []struct{
+			PlaceNo int `json:"placeNo" bson:"number"`
+			CarType int `json:"carType" bson:"park_type"`
+		}
+		resp = &response.JsonData{}
+		err error
+	)
+	uid = c.GetString("uid")
+	if !bson.IsObjectIdHex(uid) {
+		resp.ExecFail(c, "用户ID不合法")
+		return
+	}
+	err = db.Mgo.Collection("ParkSpace", func(c *mgo.Collection) error {
+		return c.Find(bson.M{"flag": 1, "status": 1}).All(&data)
+	})
+	if err != nil && err.Error() != "not found" {
+		resp.ExecFail(c, "查询车位剩余信息失败")
+		return
+	}
+	if len(data) == 0 {
+		resp.ExecSucc(c, []struct{}{})
+		return
+	}
 	resp.ExecSucc(c, data)
 }

@@ -14,13 +14,13 @@ type JsonData struct {
 	Token string `json:"token"`	//用户token
 }
 
-func (j *JsonData) LoginSucc(c *gin.Context) {
+func (j *JsonData) LoginSucc(c *gin.Context, token string) {
 	var result JsonData
 	result.State = 0
 	result.Code = 200
 	result.Data = struct {}{}
 	result.Msg = "登录成功"
-	result.Token = ""
+	result.Token = token
 	c.JSON(http.StatusOK, result)
 }
 

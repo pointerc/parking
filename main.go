@@ -1,13 +1,81 @@
 package main
 
 import (
-	"fmt"
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
+	"github.com/spf13/viper"
+	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
+	"log"
 	"net/http"
+	"parking/comm/db"
 	_ "parking/goapp/handle/space_handle"
+	"parking/goapp/model/space_model"
 	"parking/goapp/service"
+	"syscall"
+	"unsafe"
 )
+
+var (
+	max = viper.GetInt("parking.max")
+	min = viper.GetInt("parking.min")
+)
+
+const (
+	IpcCreate = 00001000
+)
+
+func init() {
+	var (
+		//isInit = viper.GetInt("init")
+		ParkSpace space_model.ParkingSpace
+		MaxPark = make([]interface{}, max)
+		MinPark = make([]interface{}, min)
+		err error
+	)
+	//使用共享内存，不删除该共享内存，保证该数据不管是否重启服务，只初始化一次
+	shmid, _, err := syscall.Syscall(syscall.SYS_SHMGET, 1024, 16, IpcCreate|0600)
+	shmaddr, _, err := syscall.Syscall(syscall.SYS_SHMAT, shmid, 0, 0)
+	//fmt.Println(*(*int)(unsafe.Pointer(uintptr(shmaddr))))
+	if *(*int)(unsafe.Pointer(uintptr(shmaddr))) == 0 {
+		for i := 0; i < max; i++ {
+			ParkSpace = space_model.ParkingSpace{
+				ID: bson.NewObjectId(),
+				Number: i + 1,
+				Status: 1,
+				ParkType: 2,
+				Flag: 1,
+			}
+			MaxPark = append(MaxPark, ParkSpace)
+		}
+		err = db.Mgo.Collection("ParkSpace", func(c *mgo.Collection) error {
+			return c.Insert(MaxPark...)
+		})
+		if err != nil {
+			log.Fatal("创建大型车位失败")
+			return
+		}
+
+		for i := 0; i < min; i++ {
+			ParkSpace = space_model.ParkingSpace{
+				ID: bson.NewObjectId(),
+				Number: i + max + 1,
+				Status: 1,
+				ParkType: 1,
+				Flag: 1,
+			}
+			MinPark = append(MinPark, ParkSpace)
+		}
+		err = db.Mgo.Collection("ParkSpace", func(c *mgo.Collection) error {
+			return c.Insert(MinPark...)
+		})
+		if err != nil {
+			log.Fatal("创建小型车位失败")
+			return
+		}
+		*(*int)(unsafe.Pointer(uintptr(shmaddr))) = 1
+	}
+}
 
 func main() {
 	Start()
@@ -39,7 +107,7 @@ func Cors() gin.HandlerFunc {
 		c.Header("Access-Control-Expose-Headers", "Content-Length, Access-Control-Allow-Origin, Access-Control-Allow-Headers, Content-Type")
 		c.Header("Access-Control-Allow-Credentials", "true")
 		c.Header("Content-Type", "application/json")
-		fmt.Println("method:", method)
+		//fmt.Println("method:", method)
 		//允许所有OPTIONS请求
 		if method == "OPTIONS" {
 			c.AbortWithStatus(http.StatusNoContent)

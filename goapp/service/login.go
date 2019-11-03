@@ -8,6 +8,7 @@ import (
 type ILogin interface {
 	LoginSystem(c *gin.Context)
 	Register(c *gin.Context)
+	UpdatePassWord(c *gin.Context)
 	LoginRouter(router *gin.Engine)
 }
 
@@ -21,6 +22,7 @@ func (l *Login) LoginRouter(router *gin.Engine) {
 	handle := router.Group("/system")
 	handle.POST("/login/1", l.LoginSystem)
 	handle.POST("/register/1", l.Register)
+	handle.POST("/update/password/1", l.UpdatePassWord)
 }
 
 func (l *Login) LoginSystem(c *gin.Context) {
@@ -29,4 +31,8 @@ func (l *Login) LoginSystem(c *gin.Context) {
 
 func (l *Login) Register(c *gin.Context) {
 	l.login.Register(c)
+}
+
+func (l *Login) UpdatePassWord(c *gin.Context) {
+	l.login.UpdatePassWord(c)
 }
